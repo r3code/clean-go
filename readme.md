@@ -124,16 +124,19 @@ Install and start mongodb:
 
 Copy templates from cmd\webapp\shared-templates to cmd\webapp\mgo-webapp\
 And run:
+
     cd cmd\webapp\mgo-webapp\
     go run app.go   
     
 ### With BoltDB
 
 Go get boltdb:
+
     go get github.com/boltdb/bolt/...
 
 Copy templates from cmd\webapp\shared-templates to cmd\webapp\bolt-webapp\
 And run:
+
     cd cmd\webapp\bolt-webapp\
     go run app_bolted.go
 
@@ -199,10 +202,7 @@ the engine and test engine instances can help test the web handlers.
 
 Why do I separate the imports in Go? I just like it ... I divide the imports into:
 
-Standard packages (e.g. `strings` or `fmt`)
-
-Extensions to packages (e.g. `net/http` or `encoding/json`)
-
-3rd party packages (e.g. `google.golang.org/appengine/datastore`)
-
-Application packages (e.g. `github.com/captaincodeman/clean-go/domain`)
+* Standard packages (e.g. `strings` or `fmt`)
+* Extensions to packages (e.g. `net/http` or `encoding/json`)
+* 3rd party packages (e.g. `google.golang.org/appengine/datastore`)
+* Application packages (e.g. `github.com/captaincodeman/clean-go/domain`)
