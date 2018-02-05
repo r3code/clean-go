@@ -1,4 +1,5 @@
 # Clean Architecture in Go
+
 An example of "Clean Architecture" in Go to demonstrate developing a testable
 application that can be run on AppEngine with Google Cloud Storage or with 
 traditional hosting and MongoDB for storage (but not limited to either).
@@ -43,6 +44,7 @@ to do some experimenting and this is what I came up with as a prototype which I'
 hopefully simplified to show the techniques.
 
 ## Dependency Rings
+
 We've all heard of n-tier or layered architecture, especially if you've come 
 from the world of .NET or Java and it's unfair that it gets a bad rep. Probably
 because it was often implemented so poorly with the typical mistake of everything
@@ -55,6 +57,7 @@ code. Here is my interpretation of the layers or rings implemented using the Go
 language (or 'Golang' for Google).
 
 ### Domain
+
 At the center of the dependencies is the domain. These are the business objects
 or entities and should represent and encapsulate the fundamental business rules
 such as "can a closed customer account create a new order?". There is usually a
@@ -68,6 +71,7 @@ to excercise the core parts of the app for testing to ensure that basic rules ar
 enforced.
 
 ### Engine / Use-Cases
+
 The application level rules and use-cases orchestrate the domain model and add richer
 rules and logic including persistence. I prefer the term engine for this package 
 because it is the engine of what the app actually does. The rules implemented at this
@@ -81,6 +85,7 @@ Those are implementation details that pull the levers of the use cases or are us
 the engine via abstract interfaces.
 
 ### Interface Adapters
+
 These are concerned with converting data from a form that the use-cases handle to
 whatever the external framework and drivers use. A use-case may expect a request 
 struct with a set of parameters and return a response struct with the results. The 
@@ -89,6 +94,7 @@ http form posts and return JSON or rendered HTML. The database may return result
 in a structure that needs to be adapted into something the rest of the app can use.
 
 ### Frameworks and Drivers
+
 These are the ports that allow the system to talk to 'outside things' which could be
 a database for persistence or a web server for the UI. None of the inner use cases 
 or domain entities should know about the implementation of these layers and they may 
@@ -97,20 +103,24 @@ now cloud datastores. Changing the storage should not change the application or 
 of the business rules. I tend to call these "providers" because ... well, .NET.
 
 # Run
+
 Within app folder ...
 
 ## App Engine
+
 Install the AppEngine SDK for Go:
 
     goapp serve
 
 ## Standalone
+
 Start mongodb and build / run the go app as normal:
 
     mongod --config /usr/local/etc/mongod.conf
     go run app.go
 
 ## Run Tests
+
 Not yet added
 
     ginkgo watch -cover domain
@@ -119,6 +129,7 @@ Not yet added
 # Implementation Notes
 
 ## Build tags
+
 Go has build tags to control which code is included and when running on AppEngine
 the `appengine` tag is automatically applied. This provides an easy way to include
 or exclude code that will only work on one platform or the other. i.e. there is no
@@ -126,6 +137,7 @@ point building the appengine provider into a standalone build and some code can'
 be executed on appengine classic - this provides a way to keep things separated.
 
 ## Dependency Injection
+
 Surely it's needed for such a thing? No it isn't. While DI can be a useful tool,
 very often it takes over a project and becomes an entangled part of the application
 architecture masquerading as the framework. Seriously, you don't need it and it 
@@ -135,6 +147,7 @@ used before the world went DI crazy and thought Spring was a good idea (oh, how
 we laugh about it now).
 
 ## Query spec
+
 The Query spec provides a way to pass a query definition to the providers in a
 storage agnostic way without depending on any database specific querying language.
 This was attempted in .NET with Linq to mixed results - you often ended up coding
@@ -144,6 +157,7 @@ to provide some filtering capability for what is going to be a NoSQL database or
 a SQL database being used in a non-relational way.
 
 ## Storage providers
+
 I picked AppEngine Datastore and MongoDB because they are kind of similar in that
 they are both NoSQL stores but are pretty different in how connections and state
 are maintained. The MongoDB storage has the connection passed in through the 
@@ -151,6 +165,7 @@ factory setup. The Datastore has no permanent connection and uses the context
 from each request.
 
 ## Enhancements
+
 There's a lot missing. Some obvious things would be to pass request information
 such as authenticated user, request IP etc... in a standard struct embedded within
 each interactor request. The responses should also return errors that the web ui
@@ -163,6 +178,7 @@ fire up a web server or a database. Test storage instances can be used to test
 the engine and test engine instances can help test the web handlers.  
 
 ## What's with the imports?
+
 Why do I separate the imports in Go? I just like it ... I divide the imports into:
 
 Standard packages (e.g. `strings` or `fmt`)
