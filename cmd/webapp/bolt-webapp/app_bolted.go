@@ -18,7 +18,7 @@ import (
 )
 
 // when running in traditional or 'standalone' mode
-// we're going to use MongoDB as the storage provider
+// we're going to use BoltDB as the storage provider
 // and start the webserver running ourselves.
 func main() {
 	st, err := boltdb.NewStorage(config.BoltDBFile)
