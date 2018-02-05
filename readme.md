@@ -139,7 +139,12 @@ And run:
 
     cd cmd\webapp\bolt-webapp\
     go run app_bolted.go
+                        
+    
+### Console Application
 
+Go to `cmd\cli` and compile the `cliapp.go` then try to run it will show help
+how to use. Uoy can add and list added greetings.
 
 ## Run Tests
 Not yet added
@@ -192,8 +197,7 @@ such as authenticated user, request IP etc... in a standard struct embedded with
 each interactor request. The responses should also return errors that the web ui
 adapter could use in the response.
 
-A console adapter could be created to demonstrate the ability to use the engine
-app logic and the storage without the web ui. Speaking of which ... some unit tests
+Some unit tests
 would also show how the majority of the system can be tested without having to 
 fire up a web server or a database. Test storage instances can be used to test 
 the engine and test engine instances can help test the web handlers.  
