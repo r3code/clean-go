@@ -1,5 +1,7 @@
 # Clean Architecture in Go
 
+**For Russian version see readme.ru-RU.md file.**
+
 An example of "Clean Architecture" in Go to demonstrate developing a testable
 application that can be run on AppEngine with Google Cloud Storage or with 
 traditional hosting and MongoDB for storage (but not limited to either).
@@ -104,7 +106,7 @@ of the business rules. I tend to call these "providers" because ... well, .NET.
 
 # Run
 
-Within app folder ...
+Within cmd subfolders ...
 
 ## App Engine
 
@@ -114,13 +116,29 @@ Install the AppEngine SDK for Go:
 
 ## Standalone
 
-Start mongodb and build / run the go app as normal:
+### With MongoDB
 
-    mongod --config /usr/local/etc/mongod.conf
-    go run app.go
+Install and start mongodb:
+
+    mongod --config /usr/local/etc/mongod.conf       
+
+Copy templates from cmd\webapp\shared-templates to cmd\webapp\mgo-webapp\
+And run:
+    cd cmd\webapp\mgo-webapp\
+    go run app.go   
+    
+### With BoltDB
+
+Go get boltdb:
+    go get github.com/boltdb/bolt/...
+
+Copy templates from cmd\webapp\shared-templates to cmd\webapp\bolt-webapp\
+And run:
+    cd cmd\webapp\bolt-webapp\
+    go run app_bolted.go
+
 
 ## Run Tests
-
 Not yet added
 
     ginkgo watch -cover domain
