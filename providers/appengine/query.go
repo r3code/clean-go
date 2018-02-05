@@ -5,10 +5,10 @@ package appengine
 import (
 	"google.golang.org/appengine/datastore"
 
-	"github.com/captaincodeman/clean-go/engine"
+	"github.com/r3code/clean-go/engine"
 )
 
-// translateQuery converts an application query spec into 
+// translateQuery converts an application query spec into
 // an appengine datastore specific query
 func translateQuery(kind string, query *engine.Query) *datastore.Query {
 	q := datastore.NewQuery(kind)
@@ -16,15 +16,15 @@ func translateQuery(kind string, query *engine.Query) *datastore.Query {
 	for _, filter := range query.Filters {
 		switch filter.Condition {
 		case engine.Equal:
-			q = q.Filter(filter.Property + " =", filter.Value)
+			q = q.Filter(filter.Property+" =", filter.Value)
 		case engine.LessThan:
-			q = q.Filter(filter.Property + " <", filter.Value)
+			q = q.Filter(filter.Property+" <", filter.Value)
 		case engine.LessThanOrEqual:
-			q = q.Filter(filter.Property + " <=", filter.Value)
+			q = q.Filter(filter.Property+" <=", filter.Value)
 		case engine.GreaterThan:
-			q = q.Filter(filter.Property + " >", filter.Value)
+			q = q.Filter(filter.Property+" >", filter.Value)
 		case engine.GreaterThanOrEqual:
-			q = q.Filter(filter.Property + " >=", filter.Value)
+			q = q.Filter(filter.Property+" >=", filter.Value)
 		}
 	}
 

@@ -8,8 +8,8 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 
-	"github.com/captaincodeman/clean-go/domain"
-	"github.com/captaincodeman/clean-go/engine"
+	"github.com/r3code/clean-go/domain"
+	"github.com/r3code/clean-go/engine"
 )
 
 type (
@@ -31,13 +31,13 @@ func newGreetingRepository() engine.GreetingRepository {
 	return &greetingRepository{}
 }
 
-func (r greetingRepository) Put(c context.Context, g *domain.Greeting) {
+func (r greetingRepository) Put(c context.Context, g *domain.Greeting) error {
 	d := &greeting{*g}
 	k := datastore.NewIncompleteKey(c, greetingKind, guestbookEntityKey(c))
 	datastore.Put(c, k, d)
 }
 
-func (r greetingRepository) List(c context.Context, query *engine.Query) []*domain.Greeting {
+func (r greetingRepository) List(c context.Context, query *engine.Query) ([]*domain.Greeting, error) {
 	g := []*greeting{}
 	q := translateQuery(greetingKind, query)
 	q = q.Ancestor(guestbookEntityKey(c))
@@ -48,7 +48,7 @@ func (r greetingRepository) List(c context.Context, query *engine.Query) []*doma
 		o[i] = &g[i].Greeting
 		o[i].ID = k[i].IntID()
 	}
-	return o
+	return nil, o
 }
 
 func guestbookEntityKey(c context.Context) *datastore.Key {

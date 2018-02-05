@@ -1,12 +1,13 @@
 package web
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/captaincodeman/clean-go/engine"
+	"github.com/r3code/clean-go/engine"
 )
 
 type (
@@ -16,7 +17,7 @@ type (
 )
 
 // wire up the greetings routes
-func initGreetings(e *gin.Engine, f engine.EngineFactory, endpoint string) {
+func initGreetings(e *gin.Engine, f engine.ServiceFactory, endpoint string) {
 	greeter := &greeter{f.NewGreeter()}
 	g := e.Group(endpoint)
 	{
@@ -40,12 +41,17 @@ func (g greeter) list(c *gin.Context) {
 	req := &engine.ListGreetingsRequest{
 		Count: count,
 	}
-	res := g.List(ctx, req)
+	res, err := g.List(ctx, req)
+	if err != nil {
+		c.Error(err)
+		return
+	}
 	if c.Query("format") == "json" {
 		c.JSON(http.StatusOK, res.Greetings)
 	} else {
 		c.HTML(http.StatusOK, "guestbook.html", res)
 	}
+	log.Printf("List Result: %v\n", res)
 }
 
 // add accepts a form post and creates a new
@@ -58,9 +64,14 @@ func (g greeter) add(c *gin.Context) {
 		Author:  c.PostForm("Author"),
 		Content: c.PostForm("Content"),
 	}
-	g.Add(ctx, req)
+	res, err := g.Add(ctx, req)
+	if err != nil {
+		c.Error(err)
+		return
+	}
 	// TODO: set a flash cookie for "added"
 	// if this was a web request, otherwise
 	// send a nice JSON response ...
+	log.Printf("Add Result: %v\n", res)
 	c.Redirect(http.StatusFound, "/")
 }

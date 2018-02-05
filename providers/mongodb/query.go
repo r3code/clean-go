@@ -4,7 +4,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"github.com/captaincodeman/clean-go/engine"
+	"github.com/r3code/clean-go/engine"
 )
 
 // translateQuery converts an application query spec into

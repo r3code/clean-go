@@ -3,7 +3,7 @@
 package appengine
 
 import (
-	"github.com/captaincodeman/clean-go/engine"
+	"github.com/r3code/clean-go/engine"
 )
 
 type (
@@ -11,11 +11,16 @@ type (
 )
 
 // NewStorage creates a new instance of this datastore storage factory
-func NewStorage() engine.StorageFactory {
-	return &storageFactory{}
+func NewStorage() (engine.StorageFactory, error) {
+	return &storageFactory{}, nil
 }
 
 // NewGreetingRepository creates a new datastore greeting repository
 func (f *storageFactory) NewGreetingRepository() engine.GreetingRepository {
 	return newGreetingRepository()
+}
+
+// CloseStorage closes session
+func (f *storageFactory) CloseStorage() error {
+	return nil
 }

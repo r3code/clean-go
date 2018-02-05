@@ -3,7 +3,7 @@ package engine
 import (
 	"golang.org/x/net/context"
 
-	"github.com/captaincodeman/clean-go/domain"
+	"github.com/r3code/clean-go/domain"
 )
 
 type (
@@ -12,11 +12,11 @@ type (
 	// and store greetings
 	GreetingRepository interface {
 		// Put adds a new Greeting to the datastore
-		Put(c context.Context, greeting *domain.Greeting)
+		Put(c context.Context, greeting *domain.Greeting) error
 
 		// List returns existing greetings matching the
 		// query provided
-		List(c context.Context, query *Query) []*domain.Greeting
+		List(c context.Context, query *Query) ([]*domain.Greeting, error)
 	}
 
 	// StorageFactory is the interface that a storage
@@ -26,5 +26,6 @@ type (
 		// NewGreetingRepository returns a storage specific
 		// GreetingRepository implementation
 		NewGreetingRepository() GreetingRepository
+		CloseStorage() error
 	}
 )

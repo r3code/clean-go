@@ -3,11 +3,12 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
-	"github.com/captaincodeman/clean-go/adapters/web"
-	"github.com/captaincodeman/clean-go/engine"
-	"github.com/captaincodeman/clean-go/providers/appengine"
+	"github.com/r3code/clean-go/adapters/web"
+	"github.com/r3code/clean-go/engine"
+	"github.com/r3code/clean-go/providers/appengine"
 )
 
 // for appengine we don't use main to start the server
@@ -16,7 +17,10 @@ import (
 // using the appengine provider for storage and wiring
 // it up to the engine and then the engine to the web.
 func init() {
-	s := appengine.NewStorage()
+	s, err := appengine.NewStorage()
+	if err != nil {
+		log.Fatalln("Storage init error: " + err.Error())
+	}
 	e := engine.NewEngine(s)
 	http.Handle("/", web.NewWebAdapter(e, false))
 }

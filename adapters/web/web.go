@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/captaincodeman/clean-go/engine"
+	"github.com/r3code/clean-go/engine"
 )
 
 func init() {
@@ -22,14 +22,14 @@ func init() {
 // Go web routers / frameworks (Gin, Echo, Goji etc...)
 // or just stick with the standard framework. Changing
 // should be far less costly.
-func NewWebAdapter(f engine.EngineFactory, log bool) http.Handler {
+func NewWebAdapter(f engine.ServiceFactory, log bool) http.Handler {
 	var e *gin.Engine
 	if log {
 		e = gin.Default()
 	} else {
 		e = gin.New()
 	}
-
+	e.Use(gin.ErrorLogger())
 	e.LoadHTMLGlob("templates/*")
 
 	initGreetings(e, f, "/")

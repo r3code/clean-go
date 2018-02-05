@@ -5,11 +5,12 @@
   </head>
   <body>
     <form action="/" method="post">
-      <div><input type="text" name="Author"></div>
-      <div><textarea name="Content" rows="3" cols="60"></textarea></div>
+      <div>Author: <input type="text" name="Author"></div>
+      <div>Content:<textarea name="Content" rows="3" cols="60"></textarea></div>
       <div><input type="submit" value="Sign Guestbook"></div>
     </form>
-
+                 
+    <h2>Exiting greetings below</h2>
     {{range .Greetings }}
     <p>
       {{with .Author}}<b>{{.}}</b>{{else}}An anonymous person{{end}}
