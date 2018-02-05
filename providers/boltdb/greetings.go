@@ -25,7 +25,7 @@ func newGreetingRepository(session *bolt.DB) engine.GreetingRepository {
 	return &greetingRepository{session}
 }
 
-func (r greetingRepository) Put(c context.Context, g *domain.Greeting) error {
+func (r greetingRepository) Put(ctx context.Context, g *domain.Greeting) error {
 	// Start read-write transaction.
 	tx, err := r.session.Begin(true)
 	if err != nil {
@@ -52,15 +52,15 @@ func (r greetingRepository) Put(c context.Context, g *domain.Greeting) error {
 	return tx.Commit()
 }
 
-func (r greetingRepository) List(c context.Context, query *engine.Query) ([]*domain.Greeting, error) {
+func (r greetingRepository) List(ctx context.Context, query *engine.Query) ([]*domain.Greeting, error) {
 	gList := []*domain.Greeting{}
 	err := r.session.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte(greetingCollection))
 
-		c := b.Cursor()
+		cr := b.Cursor()
 
-		for key, value := c.First(); key != nil; key, value = c.Next() {
+		for key, value := cr.First(); key != nil; key, value = cr.Next() {
 			var g domain.Greeting
 			if err := json.Unmarshal(value, &g); err != nil {
 				return err
