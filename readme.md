@@ -1,186 +1,174 @@
-# Архитектура "Clean" в Go
+# Clean Architecture in Go
+An example of "Clean Architecture" in Go to demonstrate developing a testable
+application that can be run on AppEngine with Google Cloud Storage or with 
+traditional hosting and MongoDB for storage (but not limited to either).
 
-Это пример архитектуры "Clean" для Go чтобы продемонстрировать разработку 
-приложения пригодного для тестирования, которое может работать на AppEngine 
-в Google Cloud Storage или на традиционном хостинге с MongoDB для хранилища 
-(но этим не ограничивается).
+There are a number of different application architectures that are all simlar
+variations on the same theme which is to have clean separation of concerns and 
+dependencies that follow the best practices of "the dependency invesion principle":
 
-Сущестувет несколько разных архитектур приложений, которые являются 
-вариациаям одного того же - иметь чистое (четкое) разделение обязанностей и зависимостей, что следует рекомендациям "принципа инверсии зависимостей":
+A. High-level modules should not depend on low-level modules. Both should depend on abstractions.
 
-A. Высокоуровневые модули не должны зависеть от низкроуровневых. 
-Всем следует им зависеть только от абстракций.
+B. Abstractions should not depend on details. Details should depend on abstractions.
 
-B. Абстракции не должны зависеть от подробностей. Подробности не должны зависеть от абстракций. 
+Variations of the approach include:
 
-Вариации этого подхода включают:
+* [The Clean Architecture](https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html) advocated by Robert Martin ('Uncle Bob')
+* Ports & Adapters or [Hexagonal Architecture](http://alistair.cockburn.us/Hexagonal+architecture) by Alistair Cockburn
+* [Onion Architecture](http://jeffreypalermo.com/blog/the-onion-architecture-part-1/) by Jeffrey Palermo
 
-* [The Clean Architecture](https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html) пропагандируется Robert Martin ('Uncle Bob')
-* Ports & Adapters or [Hexagonal Architecture](http://alistair.cockburn.us/Hexagonal+architecture) от Alistair Cockburn
-* [Onion Architecture](http://jeffreypalermo.com/blog/the-onion-architecture-part-1/) от Jeffrey Palermo
+From more in-depth practical application of many of the ideas I can strongly 
+recommend the excellent book [Implementing Domain-Driven Design](http://www.amazon.com/Implementing-Domain-Driven-Design-Vaughn-Vernon/dp/0321834577)
+by Vaughn Vernon that goes into far greater detail.
 
-Для более детального глубокого практического применения большинства этих идей
-я настоятельно рекомендую  прекрасную книгу [Implementing Domain-Driven Design](http://www.amazon.com/Implementing-Domain-Driven-Design-Vaughn-Vernon/dp/0321834577)
-от Vaughn Vernon который описывает все очень детеально.
+Besides the clean codebase, the approaches also bring other advantages - significant
+parts of the system can be unit tested quickly and easily without having to fire 
+up the full web stack, something that is often difficult when the dependencies 
+go the wrong way (if you need a database and a web-server running to make your 
+tests work, you're doing it wrong).ф
 
-Кроме чистой кодовой базы, подходы предлагают также другие преимущества - 
-значительные части системы могут быть подвергнуты модульному тестированию быстро
-и просто без разворачивания полного набора средств веб-технологий, это часто сложно, когда зависимости построены неправильно (если вам нужна рабочая база данных и веб-сервер, чтобы запустит ваши тесты - вы делаете это неверно).
-
-Я исользовал это ранее в мире .NET, но позабыл полсе перехода на Python. 
-После очередной смены языка (да снова), как я попал в прекрасный мир go, 
-я наткнулся на статью вновь воспламинившую мой интерес в этом:
+I'd used it before in the world of .NET but forgot about it after moving to coding
+more in Python. After switching languages again (yeah, right) to the wonderful 
+world of go I came across a blog post which re-ignited my interest in it:
 [Applying The Clean Architecture to Go applications](http://manuel.kiessling.net/2012/09/28/applying-the-clean-architecture-to-go-applications/)
 
-Ее замечатльно читать, но мне показалось пример чуток переусложнен и сфокусирован на частях модели реляционной базы данных и в тоже время она была недостаточно 
-подробна в некоторых вопросах, которые я хотел решить, такие как переключение 
-между разными типами хранилищь и веб UI или библиотекой (в Go их достаточно большой выбор!).
+It's a great read but I found the example a little overly-complex with too much of
+the focus on relational database model parts and at the same time it was light
+on some issues I wanted to resolve such as switching between different storage types
+and web UI or framework (and Go has so many of those to chose from!).
 
-Также я искал возможность сделать мое приложение способным работать, 
-как самостоятельно, так и в AppEngine, а также обеспечить более легкое тестирование, так что это показалось мне отличной возможностью сделать
-что-то экспериментальное и это то к чему я пришел как к прототипу, который 
-я надеюсь упростил для демонстрации методов.
+I've also been looking for a way to make my application usable both standalone
+and on AppEngine as well as being easier to test, so this seemed like a good opportunity
+to do some experimenting and this is what I came up with as a prototype which I've
+hopefully simplified to show the techniques.
 
-## Кольца зависимости
+## Dependency Rings
+We've all heard of n-tier or layered architecture, especially if you've come 
+from the world of .NET or Java and it's unfair that it gets a bad rep. Probably
+because it was often implemented so poorly with the typical mistake of everything
+relying on the database layer at the bottom which made software rigid, difficult
+to test and closely tied to the vendor's database implementation (hardly surprising
+that they promoted it so hard).
 
-Все мы слышали про многоуровневую или многослойную архитектуру, особенно
-если вы пришли из мира .NET или Java, и это несправедливо, что она имеет плохую репутацию. Вероятно потому что часто она настолько слабо реализована с типичной
-ошибкой, когда все возложено на слой базы данных внизу, что делает программное 
-обеспечение жестким, трудным для тестирования и тесно связанным с реализацей базы
-даннх её производителя (неудивительно, что они пропагандируют это так упорно).
- 
-Инвертирование зависимостей имеет замечательный эффект преобразования 
-для вашего кода. Далее мое представление слоев или колец реализованных на языке
-Go (или 'Golang' в Google).
+Reversing the dependencies though has a wonderful transformative effect on your 
+code. Here is my interpretation of the layers or rings implemented using the Go 
+language (or 'Golang' for Google).
 
-### Домен
+### Domain
+At the center of the dependencies is the domain. These are the business objects
+or entities and should represent and encapsulate the fundamental business rules
+such as "can a closed customer account create a new order?". There is usually a
+single root object that represents the system and which has the factory methods 
+to create other objects (which in turn may have their own methods to create others). 
+This is where the domain-driven design lives.
 
-В центре зависимосте - домен. Они - это бизнет объекты или сущности и должны
-представлять и включать основополагающие бизнес правила, такие как
-"может ли отключенная учетная запись покупателя создать новый заказ?". Обычно присутствует один корневой объект, предсавляющий систему с методами
-фабриками для создания других объектов (который в свою очередь может иметь 
-свои методы для создания других объектов).
-Тут и жиивет ориентированный на логику (домен проблем) архитектура.
+Looking at this should give you an idea of the business model for the application
+and what the system is working with. This package allows code such as unit tests 
+to excercise the core parts of the app for testing to ensure that basic rules are 
+enforced.
 
-Изучение этого должно дать вам понимание бизнес модели для приложения и с чем 
-работает система. Этот пакет дает возможность писать код для модульных тестов 
-для проверки основых частей приложения, чтобы убедиться в соблюдении простых 
-(базовых) правил.
+### Engine / Use-Cases
+The application level rules and use-cases orchestrate the domain model and add richer
+rules and logic including persistence. I prefer the term engine for this package 
+because it is the engine of what the app actually does. The rules implemented at this
+level should not affect the domain model rules but obviously may depend on them. 
+The rules of the application also shouldn't rely on the UI or the persistence 
+frameworks being used.
 
-### Движок / Сценарии (Engine / Use-Cases)
+Why would the business rules change depending on what UI framework is the new flavour 
+of the month or if we want to change from an RDBMS to MongoDB or some cloud datastore?
+Those are implementation details that pull the levers of the use cases or are used by
+the engine via abstract interfaces.
 
-Уровень приложения и сценариев управляет доменной моделью и добавляет более полные
-проаила и логику, включая хранение во внешней памяти. Я предпочитаю термин 
-"движок" (engine) для этого пакета, потому что это движок того что приложения 
-фактически делает. Правила реализованные на данном уровне не должны затрагивать 
-правила доменной модели, но очевидно могут зависить от них. Правила приложения
-также не должны полагастья на используемые UI или библиотеки хранения 
-во внешней памяти.
+### Interface Adapters
+These are concerned with converting data from a form that the use-cases handle to
+whatever the external framework and drivers use. A use-case may expect a request 
+struct with a set of parameters and return a response struct with the results. The 
+public facing part of the app is more likely to expect to send requests as JSON or 
+http form posts and return JSON or rendered HTML. The database may return results 
+in a structure that needs to be adapted into something the rest of the app can use.
 
-Почему бы бизнес правила должны меняться от того какая UI библиотека сейчас
-в моде в этом месяце или мы хотим сменить РСУБД на MongoDB или какое-либо 
-облачное хранилище данных?
-Это подробности реализации, которые тянут рычаги в сценариях или используеются
-движком через абстрактные интерфейсы.
+### Frameworks and Drivers
+These are the ports that allow the system to talk to 'outside things' which could be
+a database for persistence or a web server for the UI. None of the inner use cases 
+or domain entities should know about the implementation of these layers and they may 
+change over time because ... well, we used to store data in SQL, then MongoDB and 
+now cloud datastores. Changing the storage should not change the application or any 
+of the business rules. I tend to call these "providers" because ... well, .NET.
 
-### Адаптеры интерфейсов (Interface Adapters)
+# Run
+Within app folder ...
 
-Это касается перобразования данных из формы, в которой сценариии передают их 
-каким-либо внешним библиотекам или драверам для использования
-Сценайри может ожидать структуру-запрос с набором параметров и возвращать 
-струрктуру-ответю
-Публичная часть приложения более вероястно ожидает отправки запросов в JSON или 
-HTTP FORM POST и возвращает JSON или подготовленный HTML. База данных может
-возвращать результаты в структуре, которую необходмо адаптировать, чтобы остальные
-части приложения могли использовать ее.
-
-
-### Библиотеки и драйверы (Frameworks and Drivers)
-
-Есть порты, которые позволяют системе общаться с 'внешними ресурсам', это могут
-быть базы данных для хранения данных или веб-сервер для интерфейса пользователя
-(UI). Внутренние сценарии и доменные сущности ничего не дожын знать о реализации
-этих слоев и они могут меняться со временем потому что...ну, мы хранили данные в SQL, затем в MongoDB и теперь в облачном хранилище. Смена хранилища не должна менять приложение или бизнес логику. Имею склонность называть это "providers" из-за ...  что ж, .NET.
-
-## Запуск
-
-В папке `app` ...
-
-### App Engine
-
-Установить AppEngine SDK for Go:
+## App Engine
+Install the AppEngine SDK for Go:
 
     goapp serve
 
-### Отдельное приложение
-
-Установить и запустить mongodb, собрать и запустить go приложение как обычно:
+## Standalone
+Start mongodb and build / run the go app as normal:
 
     mongod --config /usr/local/etc/mongod.conf
     go run app.go
 
-### Запуск тестов
-
-Не добавлено еще
+## Run Tests
+Not yet added
 
     ginkgo watch -cover domain
     go tool cover -html=domain/domain.coverprofile
 
-## Заметки по реализации
+# Implementation Notes
 
-### Метки сборки
+## Build tags
+Go has build tags to control which code is included and when running on AppEngine
+the `appengine` tag is automatically applied. This provides an easy way to include
+or exclude code that will only work on one platform or the other. i.e. there is no
+point building the appengine provider into a standalone build and some code can't
+be executed on appengine classic - this provides a way to keep things separated.
 
-Go имеет метки сборки для управления включением кода и когда используется запуск 
-в AppEngine, тогда тег  `appengine` автоматически применяется. Это дает 
-простой способ включить или исключить код, который работает на одной или другой 
-платформе, т.е нет нужны делать провайдер для appengine в отделной сборке и часть
-кода не может исполняться в appengine classic - это дает способ держать вещи
-раздельно.
+## Dependency Injection
+Surely it's needed for such a thing? No it isn't. While DI can be a useful tool,
+very often it takes over a project and becomes an entangled part of the application
+architecture masquerading as the framework. Seriously, you don't need it and it 
+often comes with a huge cost in terms of complexity and runtime performance. 
+Whatever a DI framework does, you can do yourself with some factories - what we
+used before the world went DI crazy and thought Spring was a good idea (oh, how
+we laugh about it now).
 
-### Внедрение зависимости (Dependency Injection)
+## Query spec
+The Query spec provides a way to pass a query definition to the providers in a
+storage agnostic way without depending on any database specific querying language.
+This was attempted in .NET with Linq to mixed results - you often ended up coding
+for the specifics of certain databases (usually SQL server) but in this case the
+query language is much simpler and designed to be more lightweight as it only has
+to provide some filtering capability for what is going to be a NoSQL database or
+a SQL database being used in a non-relational way.
 
-Действительно ли это нужно? Неа. Хотя DI может быть полезным средством, часто
-оно берет верх над проектом и становиться запутанной частью притворства
-приложения базовой библиотекой (framework). Серьезно, у вас нет нужды в этом и это часто приводить к огрмной стоимости, говоря о сложность и производительности в работе.
-Все что делает библиотека внедрения зависимостей вы можете сделать сами с 
-несколькими фабриками - то что мы использовали ранее пока мир не DI-помешанным и 
-стал думать что Spring было отличной идеей (ох, как мы теперь смеемся над этим).
+## Storage providers
+I picked AppEngine Datastore and MongoDB because they are kind of similar in that
+they are both NoSQL stores but are pretty different in how connections and state
+are maintained. The MongoDB storage has the connection passed in through the 
+factory setup. The Datastore has no permanent connection and uses the context
+from each request.
 
-### Запрос (Query)
+## Enhancements
+There's a lot missing. Some obvious things would be to pass request information
+such as authenticated user, request IP etc... in a standard struct embedded within
+each interactor request. The responses should also return errors that the web ui
+adapter could use in the response.
 
-Запрос (Query) предоставляет способ передавть определение запроса провайдеру в 
-назависимой от языка запросов хранилища форме. Была попытка жтого в .NET с Linq
-в смешанных результатах - часто завершается программированием под специфику 
-определенной БЛ (обычно SQL server), но в этом случаее язык запросов, гораздо 
-проще и создатн более легким, так как ему нужно предоставить только возможность фильтрации для того что будет NoSQL или SQL базой данных испольуемой нереляционным способом.
+A console adapter could be created to demonstrate the ability to use the engine
+app logic and the storage without the web ui. Speaking of which ... some unit tests
+would also show how the majority of the system can be tested without having to 
+fire up a web server or a database. Test storage instances can be used to test 
+the engine and test engine instances can help test the web handlers.  
 
-### Провайдеры к хранилищам данных (Storage providers)
+## What's with the imports?
+Why do I separate the imports in Go? I just like it ... I divide the imports into:
 
-Выбрал AppEngine Datastore и MongoDB ибо похожи они и оба NoSQL хранилища, но 
-очень отличаются в том как соединения с состояния управляются. MongoDB 
-имеет соединение передавемое через фабрику при инициализации фабрики. AppEngine
-Datastore не имеет постоянного соединения и использует контекст из кажого запроса.
+Standard packages (e.g. `strings` or `fmt`)
 
-### Улучшения
+Extensions to packages (e.g. `net/http` or `encoding/json`)
 
-Многое еще упущено. Некоторые очевидыне вещи: нужно передавть в стандартной структуре вставленной в каждый запрос обработчика информацию о 
-запросе (аутентифицированный пользователь, IP откуда запроса и др.). Ответы
-также должны возвращать ошибки, которые адаптер веб-интерфейса сможет использовать в ответе.
+3rd party packages (e.g. `google.golang.org/appengine/datastore`)
 
-Адаптер для консольного приложени я может быть создан для показа возможности
-использовать логику движка приложения и хранилища без веб-интерфейса. 
-Некоторые модульные тесты могли бы показать как большая часть часть системы
-может быть протестировани без запуска веб-сервера и БД. Тестовые хранилища могут
-быть использованы для провери движка и проверка экземпляров движка может помочь в тестах веб-обработчиков. 
-
-### Что с импортами?
-
-Почему я разделяю импорты в Go? Просто нравиться ... Я делю импорты на:
-
-Стандартные пакеты (например `strings`, `fmt`)
-
-Расширения к пакетам (например `net/http`, `encoding/json`)
-
-Сторонние пакеты (например `google.golang.org/appengine/datastore`)
-
-Пакеты приложения (например `github.com/captaincodeman/clean-go/domain`)
+Application packages (e.g. `github.com/captaincodeman/clean-go/domain`)
