@@ -14,7 +14,7 @@ import (
 // we're going to use BoltDB as the storage provider
 // and start the webserver running ourselves.
 func main() {
-	st, err := boltdb.NewStorage(config.BoltDBFile)
+	st, err := boltdb.NewStorageProvider(config.BoltDBFile)
 	if err != nil {
 		log.Fatalln("Storage init error: " + err.Error())
 	}

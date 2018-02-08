@@ -11,18 +11,18 @@ import (
 )
 
 type (
-	greeter struct {
-		engine.Greeter
+	greetingManager struct {
+		engine.GreetingManager
 	}
 )
 
 // wire up the greetings routes
-func initGreetings(e *gin.Engine, f engine.ServiceFactory, endpoint string) {
-	greeter := &greeter{f.NewGreeter()}
+func initGreetings(e *gin.Engine, f engine.ServiceCreator, endpoint string) {
+	greeter := &greetingManager{f.NewGreetingManager()}
 	g := e.Group(endpoint)
 	{
-		g.GET("", greeter.list)
-		g.POST("", greeter.add)
+		g.GET("", greeter.listGreeting)
+		g.POST("", greeter.addGreeting)
 	}
 }
 
@@ -32,7 +32,7 @@ func initGreetings(e *gin.Engine, f engine.ServiceFactory, endpoint string) {
 // html rendered page or JSON (to simulate basic
 // content negotiation). It's simpler if the UI
 // is a SPA and the web interface is just an API.
-func (g greeter) list(c *gin.Context) {
+func (gm greetingManager) listGreeting(c *gin.Context) {
 	ctx := getContext(c)
 	count, err := strconv.Atoi(c.Query("count"))
 	if err != nil || count == 0 {
@@ -41,7 +41,7 @@ func (g greeter) list(c *gin.Context) {
 	req := &engine.ListGreetingsRequest{
 		Count: count,
 	}
-	res, err := g.List(ctx, req)
+	res, err := gm.ListGreetings(ctx, req)
 	if err != nil {
 		c.Error(err)
 		return
@@ -58,13 +58,13 @@ func (g greeter) list(c *gin.Context) {
 // greoting in the system. It could be made a
 // lot smarter and automatically check for the
 // content type to handle forms, JSON etc...
-func (g greeter) add(c *gin.Context) {
+func (gm greetingManager) addGreeting(c *gin.Context) {
 	ctx := getContext(c)
 	req := &engine.AddGreetingRequest{
 		Author:  c.PostForm("Author"),
 		Content: c.PostForm("Content"),
 	}
-	res, err := g.Add(ctx, req)
+	res, err := gm.CreateGreeting(ctx, req)
 	if err != nil {
 		c.Error(err)
 		return

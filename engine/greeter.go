@@ -6,32 +6,23 @@ import (
 )
 
 type (
-	// Greeter is the interface for our interactor
-	Greeter interface {
+	// GreetingManager is the interface for our interactor
+	GreetingManager interface {
 		// Add is the add-a-greeting use-case
-		Add(c context.Context, r *AddGreetingRequest) (*AddGreetingResponse, error)
+		CreateGreeting(c context.Context, r *AddGreetingRequest) (*AddGreetingResponse, error)
 
 		// List is the list-the-greetings use-case
-		List(c context.Context, r *ListGreetingsRequest) (*ListGreetingsResponse, error)
+		ListGreetings(c context.Context, r *ListGreetingsRequest) (*ListGreetingsResponse, error)
 	}
 
-	// greeter implementation
-	greeter struct {
-		repository GreetingRepository
+	// greetingManager implementation
+	greetingManager struct {
+		repository GreetingStorer
 	}
 )
 
-// ensure greeter realize Greeter interface
-var _ Greeter = &greeter{}
-
-// NewGreeter creates a new Greeter interactor wired up
-// to use the greeter repository from the storage provider
-// that the engine has been setup to use.
-func (f *engineServiceFactory) NewGreeter() Greeter {
-	return &greeter{
-		repository: f.NewGreetingRepository(),
-	}
-}
+// ensure greetingManager realize GreetingManager interface
+var _ GreetingManager = &greetingManager{}
 
 type (
 	// ListGreetingsRequest ti filer out results
@@ -44,9 +35,9 @@ type (
 	}
 )
 
-func (g *greeter) List(c context.Context, r *ListGreetingsRequest) (*ListGreetingsResponse, error) {
+func (g *greetingManager) ListGreetings(c context.Context, r *ListGreetingsRequest) (*ListGreetingsResponse, error) {
 	q := NewQuery("greeting").Order("date", Descending).Slice(0, r.Count)
-	gl, err := g.repository.List(c, q)
+	gl, err := g.repository.ListGreetings(c, q)
 	if err != nil {
 		return nil, err
 	}
@@ -67,14 +58,14 @@ type (
 	}
 )
 
-func (g *greeter) Add(c context.Context, r *AddGreetingRequest) (*AddGreetingResponse, error) {
+func (g *greetingManager) CreateGreeting(c context.Context, r *AddGreetingRequest) (*AddGreetingResponse, error) {
 	// this is where all our app logic would go - the
 	// rules that apply to adding a greeting whether it
 	// is being done via the web UI, a console app, or
 	// whatever the internet has just been added to ...
 
 	greeting := domain.NewGreeting(r.Author, r.Content)
-	err := g.repository.Put(c, greeting)
+	err := g.repository.PutGreeting(c, greeting)
 	if err != nil {
 		return nil, err
 	}

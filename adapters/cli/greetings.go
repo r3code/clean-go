@@ -13,26 +13,26 @@ import (
 )
 
 type (
-	greeter struct {
-		engine.Greeter
+	greetingManager struct {
+		engine.GreetingManager
 	}
 )
 
 // wire up the greetings routes
-func initGreetings(a *cli.App, f engine.ServiceFactory) {
-	greeter := &greeter{f.NewGreeter()}
+func initGreetings(a *cli.App, f engine.ServiceCreator) {
+	greetingManager := &greetingManager{f.NewGreetingManager()}
 	a.Commands = append(a.Commands, []cli.Command{
 		{
 			Name:    "list",
 			Aliases: []string{"l"},
 			Usage:   "list saved greetings",
-			Action:  greeter.list,
+			Action:  greetingManager.listGreetings,
 		},
 		{
 			Name:    "add",
 			Aliases: []string{"a"},
 			Usage:   "<author> <text> add a greeting to the list,",
-			Action:  greeter.put,
+			Action:  greetingManager.createGreeting,
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:  "author, a",
@@ -48,7 +48,7 @@ func initGreetings(a *cli.App, f engine.ServiceFactory) {
 
 }
 
-func (g *greeter) put(c *cli.Context) error {
+func (g *greetingManager) createGreeting(c *cli.Context) error {
 	if c.NArg() < 2 {
 		return errors.New(`You must pass two args "<author_name>" "<text>"`)
 	}
@@ -60,7 +60,7 @@ func (g *greeter) put(c *cli.Context) error {
 	// ctx := context.WithValue(context.Background(), "userid", c.String("user") )
 	// ctx := context.WithValue(context.Background(), "pass", c.String("pass") )
 	ctx := context.Background()
-	res, err := g.Add(ctx, req)
+	res, err := g.CreateGreeting(ctx, req)
 	if err != nil {
 		return cli.NewExitError(err.Error(), 1)
 	}
@@ -68,7 +68,7 @@ func (g *greeter) put(c *cli.Context) error {
 	return nil
 }
 
-func (g *greeter) list(c *cli.Context) error {
+func (g *greetingManager) listGreetings(c *cli.Context) error {
 	ctx := context.Background()
 	count, err := strconv.Atoi(c.Args().Get(0))
 	if err != nil || count == 0 {
@@ -77,7 +77,7 @@ func (g *greeter) list(c *cli.Context) error {
 	req := &engine.ListGreetingsRequest{
 		Count: count,
 	}
-	res, err := g.List(ctx, req)
+	res, err := g.ListGreetings(ctx, req)
 	if err != nil {
 		return cli.NewExitError(err.Error(), 1)
 	}

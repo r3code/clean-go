@@ -10,13 +10,13 @@ type (
 	storageFactory struct{}
 )
 
-// NewStorage creates a new instance of this datastore storage factory
-func NewStorage() (engine.StorageFactory, error) {
+// NewStorageProvider creates a new instance of this datastore storage factory
+func NewStorageProvider() (engine.StorageProvider, error) {
 	return &storageFactory{}, nil
 }
 
 // NewGreetingRepository creates a new datastore greeting repository
-func (f *storageFactory) NewGreetingRepository() engine.GreetingRepository {
+func (f *storageFactory) NewGreetingRepository() engine.GreetingStorer {
 	return newGreetingRepository()
 }
 

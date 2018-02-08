@@ -28,7 +28,7 @@ func translateQuery(c *mgo.Collection, query *engine.Query) *mgo.Query {
 	q := c.Find(m)
 
 	for _, order := range query.Orders {
-		switch order.Direction {
+		switch order.SortDirection {
 		case engine.Ascending:
 			q = q.Sort(order.Property)
 		case engine.Descending:

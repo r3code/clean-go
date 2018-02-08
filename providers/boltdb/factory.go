@@ -9,13 +9,13 @@ import (
 )
 
 type (
-	storageFactory struct {
+	boltDBStorageProvider struct {
 		session *bolt.DB
 	}
 )
 
-// NewStorage creates a new instance of this mongodb storage factory
-func NewStorage(filename string) (engine.StorageFactory, error) {
+// NewStorageProvider creates a new instance of this mongodb storage factory
+func NewStorageProvider(filename string) (engine.StorageProvider, error) {
 	session, err := bolt.Open(filename, 0666, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return nil, err
@@ -24,16 +24,16 @@ func NewStorage(filename string) (engine.StorageFactory, error) {
 	if err2 != nil {
 		return nil, err2
 	}
-	return &storageFactory{session}, nil
+	return &boltDBStorageProvider{session}, nil
 }
 
 // NewGreetingRepository creates a new datastore greeting repository
-func (f *storageFactory) NewGreetingRepository() engine.GreetingRepository {
+func (f *boltDBStorageProvider) NewGreetingRepository() engine.GreetingStorer {
 	return newGreetingRepository(f.session)
 }
 
 // CloseStorage closes session
-func (f *storageFactory) CloseStorage() error {
+func (f *boltDBStorageProvider) CloseStorage() error {
 	if f.session != nil {
 		return f.session.Close()
 	}

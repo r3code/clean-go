@@ -15,7 +15,7 @@ import (
 // we're going to use MongoDB as the storage provider
 // and start the webserver running ourselves.
 func main() {
-	s, err := mongodb.NewStorage(config.MongoURL)
+	s, err := mongodb.NewStorageProvider(config.MongoURL)
 	if err != nil {
 		log.Fatalln("Storage init error: " + err.Error())
 	}

@@ -17,7 +17,7 @@ import (
 // using the appengine provider for storage and wiring
 // it up to the engine and then the engine to the web.
 func init() {
-	s, err := appengine.NewStorage()
+	s, err := appengine.NewStorageProvider()
 	if err != nil {
 		log.Fatalln("Storage init error: " + err.Error())
 	}

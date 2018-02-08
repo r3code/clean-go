@@ -1,23 +1,23 @@
 package engine
 
-// Direction represents a query sort direction
-type Direction byte
+// SortDirection represents a query sort SortDirection
+type SortDirection byte
 
 const (
 	// Ascending means going up, A-Z
-	Ascending Direction = 1 << iota
+	Ascending SortDirection = 1 << iota
 
 	// Descending means reverse order, Z-A
 	Descending
 )
 
-// Condition represents a filter comparison operation
+// CompareCondition represents a filter comparison operation
 // between a field and a value
-type Condition byte
+type CompareCondition byte
 
 const (
 	// Equal if it should be the same
-	Equal Condition = 1 << iota
+	Equal CompareCondition = 1 << iota
 
 	// LessThan if it should be smaller
 	LessThan
@@ -39,27 +39,30 @@ type (
 		Name    string
 		Offset  int
 		Limit   int
-		Filters []*Filter
+		Filters []*FilterCondition
 		Orders  []*Order
 	}
 
+	// FilterValue is any type value to pass int query filter condition
+	FilterValue interface{}
+
 	// QueryBuilder helps with query creation
 	QueryBuilder interface {
-		Filter(property string, value interface{}) QueryBuilder
-		Order(property string, direction Direction)
+		Filter(property string, value FilterValue) QueryBuilder
+		Order(property string, SortDirection SortDirection)
 	}
 
-	// Filter represents a filter operation on a single field
-	Filter struct {
+	// FilterCondition represents a filter operation on a single field
+	FilterCondition struct {
 		Property  string
-		Condition Condition
-		Value     interface{}
+		Condition CompareCondition
+		Value     FilterValue
 	}
 
 	// Order represents a sort operation on a single field
 	Order struct {
-		Property  string
-		Direction Direction
+		Property      string
+		SortDirection SortDirection
 	}
 )
 
@@ -73,15 +76,15 @@ func NewQuery(name string) *Query {
 }
 
 // Filter adds a filter to the query
-func (q *Query) Filter(property string, condition Condition, value interface{}) *Query {
+func (q *Query) Filter(property string, condition CompareCondition, value FilterValue) *Query {
 	filter := NewFilter(property, condition, value)
 	q.Filters = append(q.Filters, filter)
 	return q
 }
 
 // Order adds a sort order to the query
-func (q *Query) Order(property string, direction Direction) *Query {
-	order := NewOrder(property, direction)
+func (q *Query) Order(property string, SortDirection SortDirection) *Query {
+	order := NewOrder(property, SortDirection)
 	q.Orders = append(q.Orders, order)
 	return q
 }
@@ -94,8 +97,8 @@ func (q *Query) Slice(offset, limit int) *Query {
 }
 
 // NewFilter creates a new property filter
-func NewFilter(property string, condition Condition, value interface{}) *Filter {
-	return &Filter{
+func NewFilter(property string, condition CompareCondition, value FilterValue) *FilterCondition {
+	return &FilterCondition{
 		Property:  property,
 		Condition: condition,
 		Value:     value,
@@ -103,9 +106,9 @@ func NewFilter(property string, condition Condition, value interface{}) *Filter 
 }
 
 // NewOrder creates a new query order
-func NewOrder(property string, direction Direction) *Order {
+func NewOrder(property string, SortDirection SortDirection) *Order {
 	return &Order{
-		Property:  property,
-		Direction: direction,
+		Property:      property,
+		SortDirection: SortDirection,
 	}
 }

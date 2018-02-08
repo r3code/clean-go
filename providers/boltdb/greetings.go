@@ -21,11 +21,11 @@ var (
 	greetingCollection = "greeting"
 )
 
-func newGreetingRepository(session *bolt.DB) engine.GreetingRepository {
+func newGreetingRepository(session *bolt.DB) engine.GreetingStorer {
 	return &greetingRepository{session}
 }
 
-func (r greetingRepository) Put(ctx context.Context, g *domain.Greeting) error {
+func (r *greetingRepository) PutGreeting(ctx context.Context, g *domain.Greeting) error {
 	// Start read-write transaction.
 	tx, err := r.session.Begin(true)
 	if err != nil {
@@ -52,7 +52,7 @@ func (r greetingRepository) Put(ctx context.Context, g *domain.Greeting) error {
 	return tx.Commit()
 }
 
-func (r greetingRepository) List(ctx context.Context, query *engine.Query) ([]*domain.Greeting, error) {
+func (r *greetingRepository) ListGreetings(ctx context.Context, query *engine.Query) ([]*domain.Greeting, error) {
 	gList := []*domain.Greeting{}
 	err := r.session.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys

@@ -29,7 +29,7 @@ func translateQuery(kind string, query *engine.Query) *datastore.Query {
 	}
 
 	for _, order := range query.Orders {
-		switch order.Direction {
+		switch order.SortDirection {
 		case engine.Ascending:
 			q = q.Order(order.Property)
 		case engine.Descending:

@@ -27,28 +27,34 @@ var (
 	greetingKind = "greeting"
 )
 
-func newGreetingRepository() engine.GreetingRepository {
+// var _ engine.GreetingStorer = &greetingRepository{}
+
+func newGreetingRepository() engine.GreetingStorer {
 	return &greetingRepository{}
 }
 
-func (r greetingRepository) Put(c context.Context, g *domain.Greeting) error {
+func (r greetingRepository) PutGreeting(c context.Context, g *domain.Greeting) error {
 	d := &greeting{*g}
 	k := datastore.NewIncompleteKey(c, greetingKind, guestbookEntityKey(c))
-	datastore.Put(c, k, d)
+	_, err := datastore.Put(c, k, d)
+	return err
 }
 
-func (r greetingRepository) List(c context.Context, query *engine.Query) ([]*domain.Greeting, error) {
+func (r greetingRepository) ListGreetings(c context.Context, query *engine.Query) ([]*domain.Greeting, error) {
 	g := []*greeting{}
 	q := translateQuery(greetingKind, query)
 	q = q.Ancestor(guestbookEntityKey(c))
 
-	k, _ := q.GetAll(c, &g)
+	k, err := q.GetAll(c, &g)
+	if err != nil {
+		return nil, err
+	}
 	o := make([]*domain.Greeting, len(g))
 	for i := range g {
 		o[i] = &g[i].Greeting
 		o[i].ID = k[i].IntID()
 	}
-	return nil, o
+	return o, nil
 }
 
 func guestbookEntityKey(c context.Context) *datastore.Key {

@@ -9,13 +9,13 @@ import (
 )
 
 type (
-	storageFactory struct {
+	mongoDBStorageProvider struct {
 		session *mgo.Session
 	}
 )
 
-// NewStorage creates a new instance of this mongodb storage factory
-func NewStorage(url string) (engine.StorageFactory, error) {
+// NewStorageProvider creates a new instance of this mongodb storage factory
+func NewStorageProvider(url string) (engine.StorageProvider, error) {
 	session, err := mgo.DialWithTimeout(url, 10*time.Second)
 	if err != nil {
 		return nil, err
@@ -24,20 +24,20 @@ func NewStorage(url string) (engine.StorageFactory, error) {
 	if err2 != nil {
 		return nil, err2
 	}
-	return &storageFactory{session}, nil
+	return &mongoDBStorageProvider{session}, nil
 }
 
 // CloseStorage closes session
-func (f *storageFactory) CloseStorage() error {
-	if f.session != nil {
-		f.session.Close()
+func (sp *mongoDBStorageProvider) CloseStorage() error {
+	if sp.session != nil {
+		sp.session.Close()
 	}
 	return nil
 }
 
 // NewGreetingRepository creates a new datastore greeting repository
-func (f *storageFactory) NewGreetingRepository() engine.GreetingRepository {
-	return newGreetingRepository(f.session)
+func (sp *mongoDBStorageProvider) NewGreetingRepository() engine.GreetingStorer {
+	return newGreetingRepository(sp.session)
 }
 
 func ensureIndexes(s *mgo.Session) error {

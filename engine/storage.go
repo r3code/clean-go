@@ -7,25 +7,25 @@ import (
 )
 
 type (
-	// GreetingRepository defines the methods that any
+	// GreetingStorer defines the methods that any
 	// data storage provider needs to implement to get
 	// and store greetings
-	GreetingRepository interface {
-		// Put adds a new Greeting to the datastore
-		Put(c context.Context, greeting *domain.Greeting) error
+	GreetingStorer interface {
+		// PutGreeting adds a new Greeting to the datastore
+		PutGreeting(c context.Context, greeting *domain.Greeting) error
 
-		// List returns existing greetings matching the
+		// ListGreetings returns existing greetings matching the
 		// query provided
-		List(c context.Context, query *Query) ([]*domain.Greeting, error)
+		ListGreetings(c context.Context, query *Query) ([]*domain.Greeting, error)
 	}
 
-	// StorageFactory is the interface that a storage
+	// StorageProvider is the interface that a storage
 	// provider needs to implement so that the engine can
 	// request repository instances as it needs them
-	StorageFactory interface {
-		// NewGreetingRepository returns a storage specific
-		// GreetingRepository implementation
-		NewGreetingRepository() GreetingRepository
+	StorageProvider interface {
+		// NewGreetingStorer returns a storage specific
+		// GreetingStorer implementation
+		NewGreetingRepository() GreetingStorer
 		CloseStorage() error
 	}
 )

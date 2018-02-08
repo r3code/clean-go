@@ -22,17 +22,17 @@ func init() {
 // Go web routers / frameworks (Gin, Echo, Goji etc...)
 // or just stick with the standard framework. Changing
 // should be far less costly.
-func NewWebAdapter(f engine.ServiceFactory, log bool) http.Handler {
-	var e *gin.Engine
+func NewWebAdapter(e engine.ServiceCreator, log bool) http.Handler {
+	var router *gin.Engine
 	if log {
-		e = gin.Default()
+		router = gin.Default()
 	} else {
-		e = gin.New()
+		router = gin.New()
 	}
-	e.Use(gin.ErrorLogger())
-	e.LoadHTMLGlob("templates/*")
+	router.Use(gin.ErrorLogger())
+	router.LoadHTMLGlob("templates/*")
 
-	initGreetings(e, f, "/")
+	initGreetings(router, e, "/")
 
-	return e
+	return router
 }

@@ -19,11 +19,11 @@ var (
 	greetingCollection = "greeting"
 )
 
-func newGreetingRepository(session *mgo.Session) engine.GreetingRepository {
+func newGreetingRepository(session *mgo.Session) engine.GreetingStorer {
 	return &greetingRepository{session}
 }
 
-func (r greetingRepository) Put(c context.Context, g *domain.Greeting) error {
+func (r greetingRepository) PutGreeting(c context.Context, g *domain.Greeting) error {
 	s := r.session.Clone()
 	defer s.Close()
 
@@ -37,7 +37,7 @@ func (r greetingRepository) Put(c context.Context, g *domain.Greeting) error {
 	return nil
 }
 
-func (r greetingRepository) List(c context.Context, query *engine.Query) ([]*domain.Greeting, error) {
+func (r greetingRepository) ListGreetings(c context.Context, query *engine.Query) ([]*domain.Greeting, error) {
 	s := r.session.Clone()
 	defer s.Close()
 

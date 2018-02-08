@@ -12,7 +12,7 @@ import (
 // is unknown to this).
 // Because the command line adapter ends up quite lightweight
 // it easier to replace. Changing should be far less costly.
-func NewCliAdapter(f engine.ServiceFactory, log bool) *cli.App {
+func NewCliAdapter(f engine.ServiceCreator, log bool) *cli.App {
 	app := cli.NewApp()
 	app.Usage = "greeting book"
 	app.Commands = []cli.Command{}

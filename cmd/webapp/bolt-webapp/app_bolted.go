@@ -21,7 +21,7 @@ import (
 // we're going to use BoltDB as the storage provider
 // and start the webserver running ourselves.
 func main() {
-	st, err := boltdb.NewStorage(config.BoltDBFile)
+	st, err := boltdb.NewStorageProvider(config.BoltDBFile)
 	if err != nil {
 		log.Fatalln("Storage init error: " + err.Error())
 	}
@@ -33,6 +33,7 @@ func main() {
 	server := &http.Server{
 		Addr:    endpoint,
 		Handler: router,
+		// TODO: set Read and Write timeout to drop slow clients
 	}
 	const shutdownTimeout = 8 * time.Second
 	go gracefulShutdown(server, shutdownTimeout)
