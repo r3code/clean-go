@@ -25,7 +25,12 @@ func main() {
 	if err != nil {
 		log.Fatalln("Storage init error: " + err.Error())
 	}
-	defer st.CloseStorage()
+	defer func() {
+		cerr := st.CloseStorage()
+		if cerr != nil {
+			log.Fatalln("Storage close error: " + cerr.Error())
+		}
+	}()
 	e := engine.NewEngine(st)
 
 	endpoint := ":8080"
