@@ -20,7 +20,7 @@ func main() {
 		log.Fatalln("Storage init error: " + err.Error())
 	}
 	defer func() {
-		cerr := st.CloseStorage()
+		cerr := s.CloseStorage()
 		if cerr != nil {
 			log.Fatalln("Storage close error: " + cerr.Error())
 		}
