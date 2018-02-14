@@ -1,3 +1,5 @@
+// Package boltdb is a storage provider for BoltDB, it can create new
+// instances of objects' repository when needed.
 package boltdb
 
 import (

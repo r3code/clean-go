@@ -19,6 +19,7 @@ func NewEngine(sp StorageProvider) ServiceCreator {
 // NewGreetingManager creates a new Greeter interactor wired up
 // to use the greetingManager repository from the storage provider
 // that the engine has been setup to use.
+// @implements ServiceCreator
 func (se *serviceEngine) NewGreetingManager() GreetingManager {
 	return &greetingManager{
 		repository: se.storageProvider.NewGreetingRepository(),
