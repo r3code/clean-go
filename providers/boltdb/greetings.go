@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/boltdb/bolt"
-	"github.com/r3code/clean-go/apperror"
 	"golang.org/x/net/context"
 
 	"github.com/r3code/clean-go/domain"
@@ -36,7 +35,7 @@ func (r *greetingRepository) PutGreeting(ctx context.Context, g *domain.Greeting
 	// Verify greeting doesn't already exist.
 	b := tx.Bucket([]byte(greetingCollection))
 	if v := b.Get(i64tob(g.ID)); v != nil {
-		return apperror.GreetingAlredyExists
+		return engine.ErrGreetingAlredyExists
 	}
 
 	id, _ := b.NextSequence()
