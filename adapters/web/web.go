@@ -1,6 +1,7 @@
 package web
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,10 +30,16 @@ func NewWebAdapter(e engine.ServiceCreator, log bool) http.Handler {
 	} else {
 		router = gin.New()
 	}
-	router.Use(gin.ErrorLogger())
+	// router.Use(gin.ErrorLogger())
+	router.Use(JSONAPIErrorReporter())
 	router.LoadHTMLGlob("templates/*")
 
 	initGreetings(router, e, "/")
+
+	router.GET("/testerror", func(c *gin.Context) {
+		c.Error(errors.New("Some unregisterd error in app"))
+		return
+	})
 
 	return router
 }
