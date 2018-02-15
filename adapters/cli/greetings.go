@@ -52,7 +52,7 @@ func (g *greetingManager) createGreeting(c *cli.Context) error {
 	if c.NArg() < 2 {
 		return errors.New(`You must pass two args "<author_name>" "<text>"`)
 	}
-	req := &engine.AddGreetingRequest{
+	req := &engine.CreateGreetingRequest{
 		Author:  c.Args().Get(0),
 		Content: c.Args().Get(1),
 	}

@@ -2,8 +2,10 @@ package web
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
+	nice "github.com/ekyoung/gin-nice-recovery"
 	"github.com/gin-gonic/gin"
 
 	"github.com/r3code/clean-go/engine"
@@ -32,14 +34,23 @@ func NewWebAdapter(e engine.ServiceCreator, log bool) http.Handler {
 	}
 	// router.Use(gin.ErrorLogger())
 	router.Use(JSONAPIErrorReporter())
+	// router.Use(gin.Recovery()) default recover for unexpected errors
+	router.Use(nice.Recovery(recoveryHandler))
 	router.LoadHTMLGlob("templates/*")
 
-	initGreetings(router, e, "/")
-
-	router.GET("/testerror", func(c *gin.Context) {
+	router.GET("/test/error", func(c *gin.Context) {
 		c.Error(errors.New("Some unregisterd error in app"))
 		return
 	})
 
+	initGreetingManager(router, e, "/greetings")
+
 	return router
+}
+
+func recoveryHandler(c *gin.Context, err interface{}) {
+	apiError := NewHTTPAPIError(http.StatusForbidden, "Internal Server Error", "UnexpectedError", "")
+	apiError.DebugInfo = fmt.Sprintf("%#v", err)
+	c.IndentedJSON(apiError.Code, gin.H{
+		"error": apiError})
 }

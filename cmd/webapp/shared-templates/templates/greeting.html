@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>A Greeting with ID: {{.Greeting.ID}}</title>
+  </head>
+  <body>
+                 
+    <h2>A greeting:</h2>
+    <p>
+      ID:{{.Greeting.ID}} {{with .Greeting.Author}}<b>{{.}}</b>{{else}}An anonymous person{{end}}
+      on <em>{{.Greeting.Date.Format "3:04pm, Mon 2 Jan"}}</em>
+      wrote <blockquote>{{.Greeting.Content}}</blockquote>
+    </p>
+  </body>
+</html>
