@@ -120,14 +120,14 @@ Install the AppEngine SDK for Go:
 
 Install and start mongodb:
 
-    mongod --config /usr/local/etc/mongod.conf       
+    mongod --config /usr/local/etc/mongod.conf
 
 Copy templates from cmd\webapp\shared-templates to cmd\webapp\mgo-webapp\
 And run:
 
     cd cmd\webapp\mgo-webapp\
-    go run app.go   
-    
+    go run app.go config.go
+
 ### With BoltDB
 
 Go get boltdb:
@@ -138,23 +138,26 @@ Copy templates from cmd\webapp\shared-templates to cmd\webapp\bolt-webapp\
 And run:
 
     cd cmd\webapp\bolt-webapp\
-    go run bolt-webapp.go
-                        
-    
+    go run bolt-webapp.go config.go
+
 ### Console Application
 
 Go to `cmd\cli` and compile the `cliapp.go` then try to run it will show help
 how to use. Uoy can add and list added greetings.
 
+    cd cmd\webapp\cliapp\
+    go run cliapp.go config.go
+
 ## Run Tests
+
 Not yet added
 
     ginkgo watch -cover domain
     go tool cover -html=domain/domain.coverprofile
 
-# Implementation Notes
+## Implementation Notes
 
-## Build tags
+### Build tags
 
 Go has build tags to control which code is included and when running on AppEngine
 the `appengine` tag is automatically applied. This provides an easy way to include
@@ -162,7 +165,7 @@ or exclude code that will only work on one platform or the other. i.e. there is 
 point building the appengine provider into a standalone build and some code can't
 be executed on appengine classic - this provides a way to keep things separated.
 
-## Dependency Injection
+### Dependency Injection
 
 Surely it's needed for such a thing? No it isn't. While DI can be a useful tool,
 very often it takes over a project and becomes an entangled part of the application
@@ -172,7 +175,7 @@ Whatever a DI framework does, you can do yourself with some factories - what we
 used before the world went DI crazy and thought Spring was a good idea (oh, how
 we laugh about it now).
 
-## Query spec
+### Query spec
 
 The Query spec provides a way to pass a query definition to the providers in a
 storage agnostic way without depending on any database specific querying language.
@@ -182,7 +185,7 @@ query language is much simpler and designed to be more lightweight as it only ha
 to provide some filtering capability for what is going to be a NoSQL database or
 a SQL database being used in a non-relational way.
 
-## Storage providers
+### Storage providers
 
 I picked AppEngine Datastore and MongoDB because they are kind of similar in that
 they are both NoSQL stores but are pretty different in how connections and state
@@ -190,7 +193,7 @@ are maintained. The MongoDB storage has the connection passed in through the
 factory setup. The Datastore has no permanent connection and uses the context
 from each request.
 
-## Enhancements
+### Enhancements
 
 There's a lot missing. Some obvious things would be to pass request information
 such as authenticated user, request IP etc... in a standard struct embedded within
@@ -202,7 +205,7 @@ would also show how the majority of the system can be tested without having to
 fire up a web server or a database. Test storage instances can be used to test 
 the engine and test engine instances can help test the web handlers.  
 
-## What's with the imports?
+### What's with the imports?
 
 Why do I separate the imports in Go? I just like it ... I divide the imports into:
 
