@@ -138,7 +138,7 @@ Copy templates from cmd\webapp\shared-templates to cmd\webapp\bolt-webapp\
 And run:
 
     cd cmd\webapp\bolt-webapp\
-    go run app_bolted.go
+    go run bolt-webapp.go
                         
     
 ### Console Application

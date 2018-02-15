@@ -136,7 +136,7 @@ Go get boltdb:
 И запустите
 
     cd cmd\webapp\bolt-webapp\
-    go run app_bolted.go
+    go run bolt-webapp.go
                         
     
 ### Консольное приложение
