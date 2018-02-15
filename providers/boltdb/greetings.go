@@ -2,6 +2,7 @@ package boltdb
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/boltdb/bolt"
 	"golang.org/x/net/context"
@@ -52,6 +53,20 @@ func (r *greetingRepository) PutGreeting(ctx context.Context, g *domain.Greeting
 }
 
 func (r *greetingRepository) ListGreetings(ctx context.Context, query *engine.Query) ([]*domain.Greeting, error) {
+	var condition func(actual, expected int64) bool = nil
+	var idFilter *engine.FilterCondition = nil
+	for _, filter := range query.Filters {
+		if strings.ToUpper(filter.Property) == "ID" {
+			idFilter = filter
+			switch filter.Condition {
+			case engine.Equal:
+				condition = func(actual, expected int64) bool {
+					return actual == expected
+				}
+			}
+		}
+	}
+
 	gList := []*domain.Greeting{}
 	err := r.session.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
@@ -60,6 +75,14 @@ func (r *greetingRepository) ListGreetings(ctx context.Context, query *engine.Qu
 		cr := b.Cursor()
 
 		for key, value := cr.First(); key != nil; key, value = cr.Next() {
+			if condition != nil {
+				t := condition(int64(idFilter.Value.(int64)), btoi64(key))
+				// fmt.Printf("v = %d, key = %d \n", int64(idFilter.Value.(int64)), btoi64(key))
+				if idFilter != nil && !t {
+					continue
+				}
+			}
+
 			var g domain.Greeting
 			if err := json.Unmarshal(value, &g); err != nil {
 				return err
@@ -72,5 +95,24 @@ func (r *greetingRepository) ListGreetings(ctx context.Context, query *engine.Qu
 	if err != nil {
 		return nil, err
 	}
-	return gList, nil
+	// TODO: process order query params
+	startI := 0
+	endI := len(gList)
+	if query.Offset > 0 {
+		startI = query.Offset
+		if query.Offset > len(gList) {
+			startI = len(gList)
+		}
+	}
+
+	if query.Limit > 0 {
+		endI = query.Limit
+		if query.Offset > 0 {
+			endI += query.Offset
+		}
+		if endI > len(gList) {
+			endI = len(gList)
+		}
+	}
+	return gList[startI:endI], nil
 }

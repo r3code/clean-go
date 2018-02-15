@@ -8,3 +8,7 @@ func i64tob(v int64) []byte {
 	binary.BigEndian.PutUint64(b, uint64(v))
 	return b
 }
+
+func btoi64(b []byte) int64 {
+	return int64(binary.BigEndian.Uint64(b))
+}
