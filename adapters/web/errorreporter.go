@@ -15,18 +15,23 @@ func jsonAPIErrorReporterT(errType gin.ErrorType) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 		detectedErrors := c.Errors.ByType(errType)
-
 		if len(detectedErrors) > 0 {
-			e := detectedErrors[0].Err
-			aerr, ok := GetHTTPAPIError(e)
-			if !ok {
-				// send error as JSON
-				internalError := NewHTTPAPIError(http.StatusInternalServerError, e.Error(), "InternalServerError", "")
-				c.IndentedJSON(internalError.Code, internalError)
-				return
+			var aerr *HTTPAPIError
+			err := detectedErrors[0].Err
+			switch err.(type) {
+			case *HTTPAPIError:
+				aerr = err.(*HTTPAPIError)
+			default:
+				ok := false
+				aerr, ok = GetHTTPAPIError(err)
+				if !ok {
+					// send error as JSON
+					aerr = NewHTTPAPIError(http.StatusInternalServerError, err.Error(), "InternalServerError", "###")
+				}
 			}
 
-			c.IndentedJSON(aerr.Code, aerr)
+			c.IndentedJSON(aerr.Code, gin.H{
+				"error": aerr})
 			return
 		}
 
